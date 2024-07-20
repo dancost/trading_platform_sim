@@ -12,4 +12,4 @@ class OrderInput(OrderBase):
 
 class OrderOutput(OrderBase):
     id: str
-    status: str
+    status: str = Field(None, enum=["PENDING", "EXECUTED", "CANCELED"], description="Status of the order")
