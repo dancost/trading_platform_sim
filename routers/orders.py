@@ -1,42 +1,67 @@
+import asyncio
+import json
 import uuid
-from fastapi import APIRouter, HTTPException, status
+import re
+import logging
+from fastapi import APIRouter, HTTPException, status, WebSocketDisconnect, WebSocket
 from models.schemas import OrderOutput, OrderInput
 from typing import List
+from websocket_manager import ConnectionManager
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
-
 orders_db = []
+websocket_manager = ConnectionManager()
 
 
-def validate_order(order: dict):
-    return True
+def validate_order(order_input: OrderInput):
+    if not re.match("^[A-Z]{3}[A-Z]{3}$", order_input.stocks):
+        logger.error(f"Invalid currency pair symbol: {order_input.stocks}")
+        raise HTTPException(status_code=400, detail="Invalid currency pair symbol")
+    if order_input.quantity <= 0:
+        logger.error(f"Order quantity must be greater than zero: {order_input.quantity}")
+        raise HTTPException(status_code=400, detail="Order quantity must be greater than zero")
+
+
+# auto executes pending orders after a delay
+async def execute_order(order_id: str, delay: int = 30):
+    await asyncio.sleep(delay)
+    for order in orders_db:
+        if order["id"] == order_id and order["status"] == "PENDING":
+            order["status"] = "EXECUTED"
+            logger.info(f"Order executed: {order_id}")
+            await websocket_manager.broadcast({"action": "order_executed", "data": order})
 
 
 @router.get("/orders", response_model=List[OrderOutput], status_code=status.HTTP_200_OK)
 async def retrieve_all_orders():
+    logger.info("Retrieving all orders")
     return orders_db
 
 
 @router.post("/orders", response_model=OrderOutput, status_code=status.HTTP_201_CREATED)
-async def place_a_new_order(order: OrderInput):
-    order_data = order.dict()
-    if not validate_order(order_data):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid order data"
-        )
-    order_id = str(uuid.uuid4())
-    order_data["id"] = order_id
-    order_data["status"] = "PENDING"
-    orders_db.append(order_data)
-    return OrderOutput(**order_data)  # converts order_data dict to OrderOutput object
+async def post_order(order_input: OrderInput):
+    validate_order(order_input)
+    new_order = order_input.dict()
+    new_order["id"] = str(uuid.uuid4())
+    new_order["status"] = "PENDING"
+    orders_db.append(new_order)
+    logger.info(f"New order created: {new_order['id']}")
+    await websocket_manager.broadcast({"action": "new_order", "data": new_order})
+
+    asyncio.create_task(execute_order(new_order["id"]))
+
+    return OrderOutput(**new_order)
 
 
 @router.get("/orders/{orderId}", response_model=OrderOutput, status_code=status.HTTP_200_OK)
 async def get_order_by_id(orderId: str):
     for order in orders_db:
         if order["id"] == orderId:
-            return OrderOutput(**order)  # converts order dict to OrderOutput object
+            logger.info(f"Retrieving order by ID: {orderId}")
+            return OrderOutput(**order)
+    logger.error(f"Order not found: {orderId}")
     raise HTTPException(
         status_code=status.HTTP_404_NOT_FOUND,
         detail="Order not found"
@@ -48,8 +73,23 @@ async def cancel_an_order(orderId: str):
     for order in orders_db:
         if order["id"] == orderId and order["status"] == "PENDING":
             order["status"] = "CANCELED"
+            logger.info(f"Order canceled: {orderId}")
+            await websocket_manager.broadcast(order)
             return
     raise HTTPException(
         status_code=status.HTTP_404_NOT_FOUND,
         detail="Order not found or already executed"
     )
+
+
+@router.websocket("/ws")
+async def websocket_connection(websocket: WebSocket):
+    await websocket_manager.connect(websocket)
+    try:
+        while True:
+            data = await websocket.receive_text()
+            if json.loads(data).get("action") == "subscribe":
+                websocket_manager.order_subscribers["all"].add(websocket)
+    except WebSocketDisconnect:
+        websocket_manager.disconnect(websocket)
+
