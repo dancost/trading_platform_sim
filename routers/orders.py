@@ -25,7 +25,7 @@ def validate_order(order_input: OrderInput):
 
 
 # auto executes pending orders after a delay
-async def execute_order(order_id: str, delay: int = 30):
+async def execute_order(order_id: str, delay: int = 10):
     await asyncio.sleep(delay)
     for order in orders_db:
         if order["id"] == order_id and order["status"] == "PENDING":
