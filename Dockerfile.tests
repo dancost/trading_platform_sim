@@ -3,4 +3,3 @@ WORKDIR /app
 COPY . /app
 WORKDIR /app/tests
 RUN pip install --no-cache-dir -r requirements.txt
-CMD ["pytest", "-s", "-v", "--html=test_results/report.html", "--self-contained-html", "--capture", "sys"]
