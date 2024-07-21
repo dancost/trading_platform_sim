@@ -74,7 +74,7 @@ async def cancel_an_order(orderId: str):
         if order["id"] == orderId and order["status"] == "PENDING":
             order["status"] = "CANCELED"
             logger.info(f"Order canceled: {orderId}")
-            await websocket_manager.broadcast(order)
+            await websocket_manager.broadcast({"action": "order_cancelled", "data": order})
             return
     raise HTTPException(
         status_code=status.HTTP_404_NOT_FOUND,
@@ -92,4 +92,3 @@ async def websocket_connection(websocket: WebSocket):
                 websocket_manager.order_subscribers["all"].add(websocket)
     except WebSocketDisconnect:
         websocket_manager.disconnect(websocket)
-
