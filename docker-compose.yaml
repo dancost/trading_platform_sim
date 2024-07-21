@@ -1,0 +1,25 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.app
+    networks:
+      - test
+    ports:
+      - "8000:8000"
+
+  tests:
+    build:
+      context: .
+      dockerfile: Dockerfile.tests
+    depends_on:
+      - app
+    networks:
+      - test
+    environment:
+      - BASE_URL=http://app:8000
+    volumes:
+      - ./tests/test_results:/app/tests/test_results
+
+networks:
+  test:
