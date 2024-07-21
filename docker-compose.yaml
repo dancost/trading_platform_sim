@@ -20,6 +20,8 @@ services:
       - BASE_URL=http://app:8000
     volumes:
       - ./tests/test_results:/app/tests/test_results
+    entrypoint: ""
+    command: ["sh", "-c", "pytest ${PYTEST_ARGS}"]
 
 networks:
   test:
