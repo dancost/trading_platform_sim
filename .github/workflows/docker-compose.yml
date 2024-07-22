@@ -37,19 +37,19 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
 
-    - name: Build and push Docker images
+    - name: Build Docker images
       run: |
         docker-compose build
 
-    - name: Run Docker Compose
+    - name: Start services in the background
       run: |
-        docker-compose up -d
+        docker-compose up -d app
 
     - name: Run tests
       env:
-        PYTEST_ARGS: "-s -v --html=test_results/report.html --self-contained-html --capture=sys"
+        PYTEST_ARGS: ${{ secrets.PYTEST_ARGS }}
       run: |
-        docker-compose exec tests pytest ${PYTEST_ARGS}
+        docker-compose run tests sh -c "pytest ${PYTEST_ARGS}"
 
     - name: Upload Test Report
       if: always()
