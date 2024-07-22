@@ -46,6 +46,8 @@ jobs:
         docker-compose up -d
 
     - name: Run tests
+      env:
+        PYTEST_ARGS: "-s -v --html=test_results/report.html --self-contained-html --capture=sys"
       run: |
         docker-compose exec tests pytest ${PYTEST_ARGS}
 
