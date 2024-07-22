@@ -1,6 +1,7 @@
 # Trading Platform Simulator
 
 This repository contains the Trading Platform Simulator, a FastAPI application that supports WebSockets connections and related tests.
+
 ## Table of Contents
 - [Prerequisites](#prerequisites)
 - [Setup](#setup)
@@ -8,7 +9,7 @@ This repository contains the Trading Platform Simulator, a FastAPI application t
   - [Linux](#linux)
 - [Running the Server and Tests](#running-the-server-and-tests)
   - [Windows](#windows-1)
-  - [Linux](#linux)
+  - [Linux](#linux-1)
 - [Swagger Documentation](#swagger-documentation)
 - [Test Report](#test-report)
 - [Sample WebSocket Client](#sample-websocket-client)
