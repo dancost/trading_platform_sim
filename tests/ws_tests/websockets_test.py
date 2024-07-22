@@ -9,7 +9,7 @@ from websockets import connect
 async def place_order(client, base_url, order_data):
     response = await client.post(f"{base_url}/orders", json=order_data)
     response_json = await response.json()
-    print(f"Order response: {response_json}")  # Debug print statement
+    print(f"Order response: {response_json}")
     return response_json
 
 
@@ -66,24 +66,29 @@ async def test_no_messages_after_cancelled(forex_api_session):
             print(f"Order ID: {order_id}")
             assert order_id is not None, "Order ID should not be None"
 
+            # listen for the first message (PENDING status)
+            pending_message = await websocket.recv()
+            pending_data = json.loads(pending_message)
+            print(f"Pending message: {pending_data}")
+
+            assert pending_data["data"]["id"] == order_id
+            assert pending_data["data"]["status"] == "PENDING"
+
             # cancel the order
             cancel_response = await client.delete(f"{base_url}/orders/{order_id}")
             cancel_text = await cancel_response.text()
             print(f"Cancel response: {cancel_text}")
             assert cancel_response.status == 204, f"Failed to cancel order: {cancel_text}"
 
-            # wait for cancel msg
-            await asyncio.sleep(3)
-
-            # listen for ws msg
+            # wait for the second message (CANCELLED status)
             cancelled_message = await websocket.recv()
             cancelled_data = json.loads(cancelled_message)
             print(f"Cancelled message: {cancelled_data}")
 
             assert cancelled_data["data"]["id"] == order_id
-            assert cancelled_data["data"]["status"] == "CANCELLED"
+            assert cancelled_data["data"]["status"] == "CANCELED"
 
-            # check no further messages are received within a reasonable time frame
+            # ensure no further messages are received within a reasonable time frame
             with pytest.raises(asyncio.TimeoutError):
                 await asyncio.wait_for(websocket.recv(), timeout=12)
 
