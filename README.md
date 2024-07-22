@@ -10,6 +10,7 @@ This repository contains the Trading Platform Simulator, a FastAPI application t
 - [Running the Server and Tests](#running-the-server-and-tests)
   - [Windows](#windows-1)
   - [Linux/Unix](#linuxunix-1)
+- [Sample WebSocket Client](#sample-websocket-client)
 - [Swagger Documentation](#swagger-documentation)
 
 ## Prerequisites
@@ -120,21 +121,24 @@ Before running the application and tests, ensure you have the following installe
     docker-compose up --build
     ```
 
-### Test Report
+### Sample WebSocket Client
 
-The test report will be generated and can be found at:
+You can use the following Python code to connect to the server via WebSockets and see the messages while tests are running:
 
-- `tests/test_results/report.html`
+```python
+import asyncio
+import json
+import websockets
 
-## Swagger Documentation
+async def main():
+    uri = "ws://127.0.0.1:8000/ws"
+    async with websockets.connect(uri) as websocket:
+        subscribe_message = json.dumps({"action": "subscribe", "data": {"channel": "all"}})
+        await websocket.send(subscribe_message)
 
-Once the server is running, you can access the Swagger documentation at the following URL:
+        while True:
+            message = await websocket.recv()
+            print("Received:", json.loads(message))
 
-- [http://localhost:8000/docs](http://localhost:8000/docs)
-
-This documentation provides an interactive interface to explore the API endpoints and test them.
-
-## Additional Notes
-
-- Ensure that the necessary ports are open and not being used by other applications.
-- Modify the `docker-compose.yml` file if needed to suit your environment or setup requirements.
+if __name__ == "__main__":
+    asyncio.run(main())
