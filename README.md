@@ -85,6 +85,12 @@ Before running the application and tests, ensure you have the following installe
 
 ### Linux
 
+Tested on:
+
+- Docker version 24.0.7
+- docker-compose version 1.29.2
+- Ubuntu 22.04.1
+
 1. Ensure Docker is running.
 2. Open a terminal and navigate to the project directory:
     ```sh
@@ -136,6 +142,7 @@ This documentation provides an interactive interface to explore the API endpoint
 The test report will be generated and can be found at:
 
 - `tests/test_results/report.html`
+- sample test report can be found in github actions artifacts: https://github.com/dancost/trading_platform_sim/actions/runs/10039954131/artifacts/1725525112
 
 ## Sample WebSocket Client
 
