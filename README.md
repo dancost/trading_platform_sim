@@ -1,7 +1,6 @@
 # Trading Platform Simulator
 
 This repository contains the Trading Platform Simulator, a FastAPI application that supports WebSockets connections and related tests.
-
 ## Table of Contents
 - [Prerequisites](#prerequisites)
 - [Setup](#setup)
@@ -10,8 +9,9 @@ This repository contains the Trading Platform Simulator, a FastAPI application t
 - [Running the Server and Tests](#running-the-server-and-tests)
   - [Windows](#windows-1)
   - [Linux/Unix](#linuxunix-1)
-- [Sample WebSocket Client](#sample-websocket-client)
 - [Swagger Documentation](#swagger-documentation)
+- [Test Report](#test-report)
+- [Sample WebSocket Client](#sample-websocket-client)
 
 ## Prerequisites
 
@@ -20,6 +20,7 @@ Before running the application and tests, ensure you have the following installe
 - [Docker](https://www.docker.com/get-started)
 - [Docker Compose](https://docs.docker.com/compose/install/)
 - [Git](https://git-scm.com/)
+- [Python](https://www.python.org/downloads/)
 
 ## Setup
 
@@ -121,7 +122,21 @@ Before running the application and tests, ensure you have the following installe
     docker-compose up --build
     ```
 
-### Sample WebSocket Client
+## Swagger Documentation
+
+Once the server is running, you can access the Swagger documentation at the following URL:
+
+- [http://localhost:8000/docs](http://localhost:8000/docs)
+
+This documentation provides an interactive interface to explore the API endpoints and test them.
+
+## Test Report
+
+The test report will be generated and can be found at:
+
+- `tests/test_results/report.html`
+
+## Sample WebSocket Client
 
 You can use the following Python code to connect to the server via WebSockets and see the messages while tests are running:
 
