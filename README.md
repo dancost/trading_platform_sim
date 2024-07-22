@@ -5,10 +5,10 @@ This repository contains the Trading Platform Simulator, a FastAPI application t
 - [Prerequisites](#prerequisites)
 - [Setup](#setup)
   - [Windows](#windows)
-  - [Linux/Unix](#linuxunix)
+  - [Linux](#linux)
 - [Running the Server and Tests](#running-the-server-and-tests)
   - [Windows](#windows-1)
-  - [Linux/Unix](#linuxunix-1)
+  - [Linux](#linux)
 - [Swagger Documentation](#swagger-documentation)
 - [Test Report](#test-report)
 - [Sample WebSocket Client](#sample-websocket-client)
@@ -32,7 +32,7 @@ Before running the application and tests, ensure you have the following installe
     cd trading_platform_sim
     ```
 
-### Linux/Unix
+### Linux
 
 1. Clone the repository:
     ```sh
@@ -82,7 +82,7 @@ Before running the application and tests, ensure you have the following installe
     docker-compose up --build
     ```
 
-### Linux/Unix
+### Linux
 
 1. Ensure Docker is running.
 2. Open a terminal and navigate to the project directory:
