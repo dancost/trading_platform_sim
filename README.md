@@ -12,7 +12,6 @@ This repository contains the Trading Platform Simulator, a FastAPI application t
   - [Linux](#linux-1)
 - [Swagger Documentation](#swagger-documentation)
 - [Test Report](#test-report)
-- [Sample WebSocket Client](#sample-websocket-client)
 
 ## Prerequisites
 
@@ -137,10 +136,12 @@ Once the server is running, you can access the Swagger documentation at the foll
 
 This documentation provides an interactive interface to explore the API endpoints and test them.
 
+- an offline version of the openapi.json can also be found [here](https://github.com/dancost/trading_platform_sim/blob/main/openapi_trading_platform.json)
+
 ## Test Report
 
 The test report will be generated and can be found at:
 
 - `tests/test_results/report.html`
-- sample test report can be found in github actions artifacts: https://github.com/dancost/trading_platform_sim/actions/runs/10039954131/artifacts/1725525112
+- sample test report can be found in gitHub actions artifacts: https://github.com/dancost/trading_platform_sim/actions/runs/10057725081/artifacts/1730009804 (includes failing test case for demonstration purpose)
 
