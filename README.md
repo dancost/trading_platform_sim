@@ -136,7 +136,7 @@ Once the server is running, you can access the Swagger documentation at the foll
 
 This documentation provides an interactive interface to explore the API endpoints and test them.
 
-- an offline version of the openapi.json can also be found [here](https://github.com/dancost/trading_platform_sim/blob/main/openapi_trading_platform.json)
+- an offline version of the openapi.json can also be found [here](https://github.com/dancost/trading_platform_sim/blob/main/openapi_trading_platform.yaml)
 
 ## Test Report
 
