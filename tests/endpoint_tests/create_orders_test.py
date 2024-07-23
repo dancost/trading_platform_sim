@@ -1,6 +1,4 @@
 import pytest
-import json
-
 
 
 @pytest.mark.smoke

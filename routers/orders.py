@@ -31,7 +31,7 @@ async def execute_order(order_id: str, delay: int = 10):
         if order["id"] == order_id and order["status"] == "PENDING":
             order["status"] = "EXECUTED"
             logger.info(f"Order executed: {order_id}")
-            await websocket_manager.broadcast({"action": "order_executed", "data": order})
+            await websocket_manager.broadcast({"action": "order_executed", "data": order}, order_id=order_id)
 
 
 @router.get("/orders", response_model=List[OrderOutput], status_code=status.HTTP_200_OK)
@@ -48,7 +48,7 @@ async def post_order(order_input: OrderInput):
     new_order["status"] = "PENDING"
     orders_db.append(new_order)
     logger.info(f"New order created: {new_order['id']}")
-    await websocket_manager.broadcast({"action": "new_order", "data": new_order})
+    await websocket_manager.broadcast({"action": "new_order", "data": new_order}, order_id=new_order["id"])
 
     asyncio.create_task(execute_order(new_order["id"]))
 
@@ -74,7 +74,7 @@ async def cancel_an_order(orderId: str):
         if order["id"] == orderId and order["status"] == "PENDING":
             order["status"] = "CANCELED"
             logger.info(f"Order canceled: {orderId}")
-            await websocket_manager.broadcast({"action": "order_cancelled", "data": order})
+            await websocket_manager.broadcast({"action": "order_cancelled", "data": order}, order_id=orderId)
             return
     raise HTTPException(
         status_code=status.HTTP_404_NOT_FOUND,
@@ -88,7 +88,11 @@ async def websocket_connection(websocket: WebSocket):
     try:
         while True:
             data = await websocket.receive_text()
-            if json.loads(data).get("action") == "subscribe":
-                websocket_manager.order_subscribers["all"].add(websocket)
+            message = json.loads(data)
+            action = message.get("action")
+            order_id = message.get("order_id")
+            if action == "subscribe" and order_id:
+                websocket_manager.order_subscribers[order_id].add(websocket)
+                logger.info(f"WebSocket subscribed to order ID: {order_id}")
     except WebSocketDisconnect:
         websocket_manager.disconnect(websocket)
