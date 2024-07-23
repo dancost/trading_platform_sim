@@ -156,12 +156,20 @@ import websockets
 async def main():
     uri = "ws://127.0.0.1:8000/ws"
     async with websockets.connect(uri) as websocket:
-        subscribe_message = json.dumps({"action": "subscribe", "data": {"channel": "all"}})
+        # Send subscription message for all orders
+        subscribe_message = json.dumps({"action": "subscribe"})
         await websocket.send(subscribe_message)
 
+        print("Subscribed to all orders")
+
         while True:
-            message = await websocket.recv()
-            print("Received:", json.loads(message))
+            try:
+                message = await websocket.recv()
+                print("Received:", json.loads(message))
+            except websockets.ConnectionClosed:
+                print("WebSocket connection closed")
+                break
 
 if __name__ == "__main__":
     asyncio.run(main())
+
