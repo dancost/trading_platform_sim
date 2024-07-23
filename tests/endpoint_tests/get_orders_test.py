@@ -3,12 +3,8 @@ import json
 
 
 @pytest.fixture(scope='function')
-def setup_new_order(forex_api_session):
-    # load the test sample
-    json_file_path = 'test_data/new_order_sample.json'
-    with open(json_file_path, 'r') as file:
-        new_order = json.load(file)
-
+def setup_new_order(forex_api_session, load_sample_order):
+    new_order = load_sample_order
     # modify test sample
     new_order["stocks"] = "EURUSD"
     new_order["quantity"] = 10
