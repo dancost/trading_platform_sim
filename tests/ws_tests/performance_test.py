@@ -22,16 +22,16 @@ async def test_performance(forex_api_session):
     order_data = {"stocks": "EURUSD", "quantity": 10}
 
     async with aiohttp.ClientSession() as client:
-        # open ws connection and set ping interval to None (only way I could stop the server from disconnecting me)
+        # Open WebSocket connection
         async with connect(uri, ping_interval=None) as websocket:
-            # place 100 orders simultaneously
+            # Place 100 orders simultaneously
             tasks = [place_order(client, base_url, order_data) for _ in range(100)]
             start_time = time.time()
             responses = await asyncio.gather(*tasks)
             end_time = time.time()
             print(f"Time to place 100 orders: {end_time - start_time:.2f} seconds")
 
-            # check response
+            # Check response and collect order IDs
             order_ids = []
             for response in responses:
                 assert 'id' in response, f"Response missing 'id': {response}"
@@ -39,23 +39,26 @@ async def test_performance(forex_api_session):
 
             print(f"Placed 100 orders successfully.")
 
-            # read ws messages
-            pending_timestamps = {}
+            # Subscribe to specific order IDs
+            for order_id in order_ids:
+                subscribe_message = json.dumps({"action": "subscribe", "order_id": order_id})
+                await websocket.send(subscribe_message)
+
+            # Read WebSocket messages
             executed_timestamps = {}
-            for _ in range(200):  # expect 2 msg per order (pending and executed)
-                message = await websocket.recv()
+            for _ in range(100):  # Expect only the EXECUTED messages
+                message = await asyncio.wait_for(websocket.recv(), timeout=20)
                 message_data = json.loads(message)
                 order_id = message_data['data']['id']
-                if message_data['data']['status'] == 'PENDING':
-                    pending_timestamps[order_id] = time.time()
-                elif message_data['data']['status'] == 'EXECUTED':
+                if message_data['data']['status'] == 'EXECUTED':
                     executed_timestamps[order_id] = time.time()
+                    print(f"Executed message for order {order_id}: {message_data}")
 
-            # compute delays
+            # Compute delays
             execution_delays = []
             for order_id in order_ids:
-                if order_id in pending_timestamps and order_id in executed_timestamps:
-                    delay = executed_timestamps[order_id] - pending_timestamps[order_id]
+                if order_id in executed_timestamps:
+                    delay = executed_timestamps[order_id] - start_time
                     execution_delays.append(delay)
                 else:
                     print(f"Missing timestamps for order {order_id}")
