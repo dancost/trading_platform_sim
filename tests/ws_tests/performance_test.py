@@ -24,7 +24,7 @@ async def test_performance(forex_api_session):
     async with aiohttp.ClientSession() as client:
         # open ws connection
         async with connect(uri, ping_interval=None) as websocket:
-            # Place 100 orders simultaneously
+            # place 100 orders simultaneously
             tasks = [place_order(client, base_url, order_data) for _ in range(100)]
             start_time = time.time()
             responses = await asyncio.gather(*tasks)
