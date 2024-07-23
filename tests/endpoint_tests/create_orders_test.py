@@ -2,30 +2,25 @@ import pytest
 import json
 
 
-@pytest.fixture(scope='function')
-def load_sample_order():
-    # load the test sample and pass it to test functions
-    json_file_path = 'test_data/new_order_sample.json'
-    with open(json_file_path, 'r') as file:
-        sample_order = json.load(file)
-    return sample_order
-
 
 @pytest.mark.smoke
-def test_post_new_order(forex_api_session, load_sample_order):
-    # modify test sample with valid data
+@pytest.mark.parametrize("quantity", [10, 10.5])
+def test_post_new_order(forex_api_session, load_sample_order, quantity):
+    # update test sample with valid data
     new_order = load_sample_order
     new_order["stocks"] = "EURUSD"
-    new_order["quantity"] = 10
+    new_order["quantity"] = quantity
 
-    # Send the new order request
+    # send the new order request
     print(f"Sending new order request with body: {new_order}")
     new_order_request = forex_api_session.post_orders(order_request=new_order)
-    assert new_order_request.status_code == 201, (f"Failed sending new order request: "
-                                                  f"{new_order_request.status_code, new_order_request.content}")
+
+    errors = []
+
+    # check order created
+    assert new_order_request.status_code == 201
 
     order_data = new_order_request.json()
-    errors = []
 
     # iterate through response elements and store all errors instead of failing at first assert
     if order_data["stocks"] != new_order["stocks"]:
@@ -33,9 +28,9 @@ def test_post_new_order(forex_api_session, load_sample_order):
     if order_data["quantity"] != new_order["quantity"]:
         errors.append(f"Quantity mismatch. Expected {new_order['quantity']} but got {order_data['quantity']}")
     if "id" not in order_data:
-        errors.append(f"Order ID missing in response.")
+        errors.append("Order ID missing in response.")
     if "status" not in order_data:
-        errors.append(f"Order status missing in response.")
+        errors.append("Order status missing in response.")
 
     # check no errors encountered
     assert len(errors) == 0, f"Found errors: {errors}"
@@ -67,8 +62,10 @@ def test_post_new_order_invalid_symbol(forex_api_session, invalid_stocks, expect
 @pytest.mark.parametrize("invalid_quantity, expected_detail", [
     (0, "Order quantity must be greater than zero"),
     (-10, "Order quantity must be greater than zero"),
+    ("eurusd", "Order quantity must be an integer"),
 ])
 def test_post_new_order_invalid_quantity(forex_api_session, invalid_quantity, expected_detail):
+    # the case where the quantity is a string will fail on purpose for demo reasons
     # create an invalid order request
     invalid_order = {
         "stocks": "EURUSD",
